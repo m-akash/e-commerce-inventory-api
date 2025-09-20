@@ -21,7 +21,7 @@ export class AuthController {
         user: {
           type: 'object',
           properties: {
-            id: { type: 'number' },
+            id: { type: 'string' },
             email: { type: 'string' },
             username: { type: 'string' },
             createdAt: { type: 'string', format: 'date-time' },
@@ -51,7 +51,7 @@ export class AuthController {
         user: {
           type: 'object',
           properties: {
-            id: { type: 'number' },
+            id: { type: 'string' },
             email: { type: 'string' },
             username: { type: 'string' },
             createdAt: { type: 'string', format: 'date-time' },

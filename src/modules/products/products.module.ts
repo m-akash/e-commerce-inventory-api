@@ -1,34 +1,30 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { AuthModule } from '../auth/auth.module';
 import { CategoriesModule } from '../categories/categories.module';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { SupabaseService } from '../../common/services/supabase.service';
+import { ImageUploadService } from '../../common/services/image-upload.service';
 
 @Module({
   imports: [
+    ConfigModule,
     PrismaModule,
     MulterModule.register({
-      dest: './uploads',
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          cb(null, './uploads');
-        },
-        filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const fileExtension = file.originalname.split('.').pop() || '';
-          cb(null, file.fieldname + '-' + uniqueSuffix + '.' + fileExtension);
-        },
-      }),
+      storage: memoryStorage(), // Store files in memory for Supabase upload
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+      },
     }),
     AuthModule,
     CategoriesModule,
   ],
   controllers: [ProductsController],
-  providers: [ProductsService],
+  providers: [ProductsService, SupabaseService, ImageUploadService],
   exports: [ProductsService],
 })
 export class ProductsModule {}

@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  ParseIntPipe,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -42,26 +41,29 @@ export class ProductsController {
   ) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({
     summary: 'Create a new product',
     description:
-      'Create a product with an existing category. Category must be created first using POST /api/categories.',
+      'Create a product with an existing category. You can either:\n1. Upload an image file using multipart/form-data (image will be stored in Supabase)\n2. Provide an imageUrl in JSON (URL will be stored directly)\nCategory must be created first using POST /api/categories.',
   })
+  @ApiConsumes('multipart/form-data', 'application/json')
   @ApiResponse({
     status: 201,
     description: 'Product successfully created',
     type: 'object',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 400, description: 'Bad request or invalid file' })
   @ApiResponse({
     status: 404,
     description: 'Category not found. Please create a category first.',
   })
   create(
     @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: User,
   ) {
-    return this.productsService.create(createProductDto, user.id);
+    return this.productsService.create(createProductDto, file, user.id);
   }
 
   @Get('categories')
@@ -86,7 +88,7 @@ export class ProductsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all products with filters and pagination' })
-  @ApiQuery({ name: 'categoryId', required: false, type: 'number' })
+  @ApiQuery({ name: 'categoryId', required: false, type: 'string' })
   @ApiQuery({ name: 'minPrice', required: false, type: 'number' })
   @ApiQuery({ name: 'maxPrice', required: false, type: 'number' })
   @ApiQuery({ name: 'search', required: false, type: 'string' })
@@ -124,20 +126,20 @@ export class ProductsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get product by ID' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Product ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Product ID' })
   @ApiResponse({
     status: 200,
     description: 'Product retrieved successfully',
     type: 'object',
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update product' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Product ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Product ID' })
   @ApiResponse({
     status: 200,
     description: 'Product updated successfully',
@@ -146,7 +148,7 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiResponse({ status: 403, description: 'Forbidden - not your product' })
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
     @CurrentUser() user: User,
   ) {
@@ -155,30 +157,45 @@ export class ProductsController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete product' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Product ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Product ID' })
   @ApiResponse({ status: 200, description: 'Product deleted successfully' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiResponse({ status: 403, description: 'Forbidden - not your product' })
-  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+  remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.productsService.remove(id, user.id);
   }
 
   @Post(':id/upload-image')
   @UseInterceptors(FileInterceptor('image'))
-  @ApiOperation({ summary: 'Upload product image' })
+  @ApiOperation({ summary: 'Upload product image to Supabase Storage' })
   @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'id', type: 'number', description: 'Product ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Product ID' })
   @ApiResponse({
     status: 200,
-    description: 'Image uploaded successfully',
+    description: 'Image uploaded successfully to Supabase Storage',
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiResponse({ status: 403, description: 'Forbidden - not your product' })
+  @ApiResponse({ status: 400, description: 'Invalid file type or size' })
   async uploadImage(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: User,
   ) {
     return this.productsService.uploadImage(id, file, user.id);
+  }
+
+  @Delete(':id/image')
+  @ApiOperation({ summary: 'Delete product image from Supabase Storage' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Product ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Image deleted successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - not your product' })
+  @ApiResponse({ status: 400, description: 'Product has no image to delete' })
+  async deleteImage(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.productsService.deleteImage(id, user.id);
   }
 }

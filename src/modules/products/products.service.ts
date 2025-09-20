@@ -9,16 +9,25 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { Product } from '@prisma/client';
+import { ImageUploadService } from '../../common/services/image-upload.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private imageUploadService: ImageUploadService,
+  ) {}
 
   async create(
     createProductDto: CreateProductDto,
-    userId: number,
-  ): Promise<Product> {
-    const { categoryId, ...productData } = createProductDto;
+    file: Express.Multer.File,
+    userId: string,
+  ): Promise<{ product: Product; imageUrl?: string; message: string }> {
+    const {
+      categoryId,
+      imageUrl: providedImageUrl,
+      ...productData
+    } = createProductDto;
 
     // Check if category exists
     const category = await this.prisma.category.findUnique({
@@ -47,13 +56,61 @@ export class ProductsService {
       );
     }
 
-    return this.prisma.product.create({
+    // Create the product first
+    const product = await this.prisma.product.create({
       data: {
         ...productData,
         categoryId,
         userId,
+        imageUrl: providedImageUrl, // Store the provided imageUrl if any
       },
     });
+
+    let finalImageUrl: string | undefined = providedImageUrl;
+    let message = 'Product created successfully';
+
+    // If image file is provided, upload it
+    if (file) {
+      try {
+        const uploadResult = await this.imageUploadService.uploadImage(
+          file,
+          product.id,
+          userId,
+        );
+
+        // Update product with image URL
+        const updatedProduct = await this.prisma.product.update({
+          where: { id: product.id },
+          data: {
+            imageUrl: uploadResult.imageUrl,
+          },
+        });
+
+        finalImageUrl = uploadResult.imageUrl;
+        message =
+          'Product created successfully with image uploaded to Supabase Storage';
+
+        return {
+          product: updatedProduct,
+          imageUrl: finalImageUrl,
+          message,
+        };
+      } catch (error) {
+        // If image upload fails, we still have the product created
+        // Log the error but don't fail the entire operation
+        console.warn(
+          `Failed to upload image for product ${product.id}:`,
+          error,
+        );
+        message = 'Product created successfully, but image upload failed';
+      }
+    }
+
+    return {
+      product,
+      imageUrl: finalImageUrl,
+      message,
+    };
   }
 
   async findAll(query: ProductQueryDto): Promise<{
@@ -77,7 +134,7 @@ export class ProductsService {
 
     // Build where clause
     const where: {
-      categoryId?: number;
+      categoryId?: string;
       price?: {
         gte?: number;
         lte?: number;
@@ -143,7 +200,7 @@ export class ProductsService {
     };
   }
 
-  async findOne(id: number): Promise<Product> {
+  async findOne(id: string): Promise<Product> {
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
@@ -170,9 +227,9 @@ export class ProductsService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateProductDto: UpdateProductDto,
-    userId: number,
+    userId: string,
   ): Promise<Product> {
     const product = await this.findOne(id);
 
@@ -199,12 +256,25 @@ export class ProductsService {
     });
   }
 
-  async remove(id: number, userId: number): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     const product = await this.findOne(id);
 
     // Check if user owns the product
     if (product.userId !== userId) {
       throw new ForbiddenException('You can only delete your own products');
+    }
+
+    // Delete associated images from Supabase Storage
+    if (product.imageUrl) {
+      try {
+        await this.imageUploadService.deleteProductImages(id, userId);
+      } catch (error) {
+        // Log error but don't fail the product deletion
+        console.warn(
+          `Failed to delete images for product ${id}:`,
+          error instanceof Error ? error.message : 'Unknown error',
+        );
+      }
     }
 
     await this.prisma.product.delete({
@@ -250,9 +320,9 @@ export class ProductsService {
   }
 
   async uploadImage(
-    productId: number,
+    productId: string,
     file: Express.Multer.File,
-    userId: number,
+    userId: string,
   ): Promise<{ message: string; imageUrl: string; product: Product }> {
     // Check if product exists and user owns it
     const product = await this.findOne(productId);
@@ -263,29 +333,58 @@ export class ProductsService {
       );
     }
 
-    if (!file) {
-      throw new BadRequestException('No image file provided');
-    }
+    // Upload image to Supabase Storage
+    const { imageUrl } = await this.imageUploadService.uploadImage(
+      file,
+      productId,
+      userId,
+    );
 
-    // Convert image to base64
-    const imageBase64 = file.buffer.toString('base64');
-
-    // Create a simple URL (in production, you'd upload to cloud storage)
-    const imageUrl = `http://localhost:3000/${file.filename}`;
-
-    // Update product with image data
+    // Update product with new image URL
     const updatedProduct = await this.prisma.product.update({
       where: { id: productId },
       data: {
         imageUrl,
-        imageBase64,
       },
     });
 
     return {
-      message: 'Image uploaded successfully',
+      message: 'Image uploaded successfully to Supabase Storage',
       imageUrl,
       product: updatedProduct,
+    };
+  }
+
+  async deleteImage(
+    productId: string,
+    userId: string,
+  ): Promise<{ message: string }> {
+    // Check if product exists and user owns it
+    const product = await this.findOne(productId);
+
+    if (product.userId !== userId) {
+      throw new ForbiddenException(
+        'You can only delete images from your own products',
+      );
+    }
+
+    if (!product.imageUrl) {
+      throw new BadRequestException('Product has no image to delete');
+    }
+
+    // Delete images from Supabase Storage
+    await this.imageUploadService.deleteProductImages(productId, userId);
+
+    // Update product to remove image URL
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: {
+        imageUrl: null,
+      },
+    });
+
+    return {
+      message: 'Image deleted successfully',
     };
   }
 }
