@@ -18,6 +18,7 @@ A comprehensive RESTful API for e-commerce inventory management built with NestJ
 - Pagination support
 - Search functionality
 - Image upload support (base64 or URL)
+- Static file serving for uploaded images
 - User ownership validation
 
 ### Category Management
@@ -33,18 +34,21 @@ A comprehensive RESTful API for e-commerce inventory management built with NestJ
 - Input validation with class-validator
 - Error handling with proper HTTP status codes
 - CORS enabled
-- TypeORM with PostgreSQL
+- Prisma ORM with PostgreSQL
+- Static file serving for uploaded images
+- Health check endpoint
 - Domain-Driven Design (DDD) architecture
 
 ## Tech Stack
 
 - **Backend**: Node.js with NestJS & TypeScript
 - **Database**: PostgreSQL
-- **ORM**: TypeORM
+- **ORM**: Prisma
 - **Authentication**: JWT with Passport
 - **Documentation**: Swagger/OpenAPI
 - **Validation**: class-validator
 - **File Upload**: Multer
+- **Static Files**: NestJS Static Assets
 - **Architecture**: Domain-Driven Design (DDD)
 
 ## Prerequisites
@@ -83,8 +87,9 @@ Update the `.env` file with your database credentials:
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=your_password
+DATABASE_PASSWORD=password
 DATABASE_NAME=ecommerce_inventory
+DATABASE_URL="give your neon url if you want to use this"
 
 # JWT Configuration
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -101,6 +106,18 @@ Make sure PostgreSQL is running and create the database:
 
 ```sql
 CREATE DATABASE ecommerce_inventory;
+```
+
+Run Prisma migrations to set up the database schema:
+
+```bash
+npx prisma migrate dev
+```
+
+Generate Prisma client:
+
+```bash
+npx prisma generate
 ```
 
 ### 5. Run the Application
@@ -124,6 +141,11 @@ Once the server is running, you can access the interactive Swagger documentation
 
 ## API Endpoints
 
+### Health Check
+
+- `GET /` - Welcome message
+- `GET /health` - Health check endpoint with system status
+
 ### Authentication
 
 - `POST /api/auth/register` - Register a new user
@@ -138,6 +160,7 @@ Once the server is running, you can access the interactive Swagger documentation
 - `PATCH /api/products/:id` - Update product
 - `DELETE /api/products/:id` - Delete product
 - `POST /api/products/:id/upload-image` - Upload product image
+- Static file serving at `/uploads/*` - Access uploaded images
 
 ### Categories
 
@@ -177,6 +200,33 @@ All endpoints except authentication require a JWT token. Include the token in th
 
 ```bash
 Authorization: Bearer <your-jwt-token>
+```
+
+## 📁 File Uploads and Static Files
+
+The API supports file uploads for product images and serves them as static files:
+
+### Upload Endpoints
+
+- **POST** `/api/products/:id/upload-image` - Upload product image
+- **GET** `/uploads/image-*.png` - Access uploaded images directly
+
+### Supported Image Formats
+
+- PNG, JPG, JPEG, GIF, WebP
+
+### Upload Directory
+
+- Files are stored in the `uploads/` directory
+- Images are automatically renamed with timestamps
+- Static files are served at `/uploads/*` route
+
+### Example File Upload
+
+```bash
+curl -X POST http://localhost:3000/api/products/1/upload-image \
+  -H "Authorization: Bearer <your-jwt-token>" \
+  -F "image=@/path/to/your/image.png"
 ```
 
 ### Example Authentication Flow
@@ -221,25 +271,45 @@ src/
 ├── modules/                  # Feature modules
 │   ├── auth/                # Authentication module
 │   │   ├── dto/
+│   │   │   ├── login.dto.ts
+│   │   │   └── register.dto.ts
 │   │   ├── strategies/
+│   │   │   └── jwt.strategy.ts
 │   │   ├── auth.controller.ts
 │   │   ├── auth.service.ts
 │   │   └── auth.module.ts
 │   ├── products/            # Products module
 │   │   ├── dto/
+│   │   │   ├── create-product.dto.ts
+│   │   │   ├── update-product.dto.ts
+│   │   │   └── product-query.dto.ts
 │   │   ├── products.controller.ts
 │   │   ├── products.service.ts
 │   │   └── products.module.ts
 │   └── categories/          # Categories module
 │       ├── dto/
+│       │   ├── create-category.dto.ts
+│       │   └── update-category.dto.ts
 │       ├── categories.controller.ts
 │       ├── categories.service.ts
 │       └── categories.module.ts
 ├── common/                  # Shared utilities
 │   ├── guards/
+│   │   └── jwt-auth.guard.ts
 │   └── decorators/
-├── app.module.ts
-└── main.ts
+│       └── current-user.decorator.ts
+├── app.controller.ts        # Main app controller with health check
+├── app.service.ts          # Main app service
+├── app.module.ts           # Root module
+└── main.ts                 # Application bootstrap
+
+uploads/                    # Static file uploads directory
+├── image-*.png            # Uploaded product images
+└── ...
+
+prisma/                     # Database schema and migrations
+├── migrations/            # Database migration files
+└── schema.prisma         # Prisma schema definition
 ```
 
 ## Deployment
@@ -260,11 +330,10 @@ src/
 4. **Build Command:** `npm install && npm run build`
 5. **Start Command:** `npm run start:prod`
 
-### Using Supabase for Database
+### Using Neon for Database
 
-1. **Create a Supabase project**
-2. **Get your database credentials from the Supabase dashboard**
-3. **Update your environment variables with Supabase credentials**
+1. **Create a Neon project**
+2. **Get your database credentials from the Neon dashboard**
 
 ## Testing
 
@@ -281,17 +350,18 @@ npm run test:cov
 
 ## Environment Variables
 
-| Variable            | Description         | Default             |
-| ------------------- | ------------------- | ------------------- |
-| `DATABASE_HOST`     | PostgreSQL host     | localhost           |
-| `DATABASE_PORT`     | PostgreSQL port     | 5432                |
-| `DATABASE_USERNAME` | Database username   | postgres            |
-| `DATABASE_PASSWORD` | Database password   | password            |
-| `DATABASE_NAME`     | Database name       | ecommerce_inventory |
-| `JWT_SECRET`        | JWT secret key      | your-secret-key     |
-| `JWT_EXPIRES_IN`    | JWT expiration time | 24h                 |
-| `PORT`              | Application port    | 3000                |
-| `NODE_ENV`          | Environment         | development         |
+| Variable            | Description         | Default                  |
+| ------------------- | ------------------- | ------------------------ |
+| `DATABASE_HOST`     | PostgreSQL host     | localhost                |
+| `DATABASE_PORT`     | PostgreSQL port     | 5432                     |
+| `DATABASE_USERNAME` | Database username   | postgres                 |
+| `DATABASE_PASSWORD` | Database password   | password                 |
+| `DATABASE_NAME`     | Database name       | ecommerce_inventory      |
+| `DATABASE_URL`      | Full database URL   | Optional (for cloud DBs) |
+| `JWT_SECRET`        | JWT secret key      | your-secret-key          |
+| `JWT_EXPIRES_IN`    | JWT expiration time | 24h                      |
+| `PORT`              | Application port    | 3000                     |
+| `NODE_ENV`          | Environment         | development              |
 
 **Live Demo**: [Your Render URL here]
 **Database**: [Your Supabase URL here]
