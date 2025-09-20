@@ -167,4 +167,7 @@ dist
 # Uploads directory
 uploads/
 
+# Documentation files
+DEPLOYMENT.md
+
 /generated/prisma

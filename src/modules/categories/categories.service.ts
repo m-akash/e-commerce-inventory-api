@@ -44,7 +44,7 @@ export class CategoriesService {
     }));
   }
 
-  async findOne(id: number): Promise<Category & { productCount: number }> {
+  async findOne(id: string): Promise<Category & { productCount: number }> {
     const category = await this.prisma.category.findUnique({
       where: { id },
       include: {
@@ -63,7 +63,7 @@ export class CategoriesService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
     const category = await this.findOne(id);
@@ -85,7 +85,7 @@ export class CategoriesService {
     });
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     // Check if category exists
     await this.findOne(id);
 

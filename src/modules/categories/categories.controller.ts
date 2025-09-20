@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -54,20 +53,20 @@ export class CategoriesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get category by ID' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Category ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Category ID' })
   @ApiResponse({
     status: 200,
     description: 'Category retrieved successfully',
     type: 'object',
   })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update category' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Category ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Category ID' })
   @ApiResponse({
     status: 200,
     description: 'Category updated successfully',
@@ -76,7 +75,7 @@ export class CategoriesController {
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 409, description: 'Category name already exists' })
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
     return this.categoriesService.update(id, updateCategoryDto);
@@ -84,11 +83,11 @@ export class CategoriesController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete category' })
-  @ApiParam({ name: 'id', type: 'number', description: 'Category ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Category ID' })
   @ApiResponse({ status: 200, description: 'Category deleted successfully' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 400, description: 'Category has products' })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);
   }
 }
