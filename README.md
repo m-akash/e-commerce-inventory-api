@@ -7,7 +7,7 @@ A comprehensive RESTful API for e-commerce inventory management built with NestJ
 - **Backend**: NestJS & TypeScript
 - **Database**: Neon PostgreSQL with Prisma ORM
 - **Authentication**: JWT with Passport
-- **Documentation**: Swagger/OpenAPI
+- **Documentation**: Swagger
 - **File Upload**: Supabase Storage with Multer
 - **Deployment**: Vercel (Serverless Functions)
 - **Cloud Storage**: Supabase Storage
