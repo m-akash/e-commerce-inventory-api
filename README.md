@@ -17,6 +17,7 @@ A comprehensive RESTful API for e-commerce inventory management built with NestJ
 - **Backend API**: https://e-commerce-inventory-api.vercel.app/
 - **API Documentation**: https://e-commerce-inventory-api.vercel.app/api/docs
 - **Database Dashboard**: postgresql://username:password@ep-empty-flower-a14lv8u8-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+- **Postman Api(optional)**: https://drive.google.com/file/d/1E4a0LHmo5DGbZflWkB3fFsyoO8-bLjzb/view?usp=sharing
 
 ## Quick Setup
 
