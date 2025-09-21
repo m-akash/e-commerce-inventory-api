@@ -1,25 +1,25 @@
 # E-commerce Inventory API
 
-A comprehensive RESTful API for e-commerce inventory management built with NestJS, TypeScript, Neon PostgreSQL, and Supabase Storage.
+A comprehensive RESTful API for e-commerce inventory management built with NestJS, TypeScript, Neon PostgreSQL, Prisma and Supabase Storage.
 
 ## Features
 
-- ** Authentication & Authorization**: JWT-based authentication with secure user registration and login
-- ** Product Management**: Full CRUD operations for products with image upload support
-- ** Category Management**: Organize products with hierarchical category system
-- ** Image Upload**: Cloud-based image storage using Supabase Storage
-- ** API Documentation**: Interactive Swagger/OpenAPI documentation
-- ** Data Validation**: Comprehensive input validation using class-validator
-- ** CORS Support**: Cross-origin resource sharing enabled
-- ** Cloud Ready**: Optimized for Vercel serverless deployment
-- ** Database**: Neon PostgreSQL for data storage
-- ** TypeScript**: Full type safety and better developer experience
+- **Authentication & Authorization**: JWT-based authentication with secure user registration and login
+- **Product Management**: Full CRUD operations for products with image upload support
+- **Category Management**: Organize products with hierarchical category system
+- **Image Upload**: Cloud-based image storage using Supabase Storage
+- **API Documentation**: Interactive Swagger/OpenAPI documentation
+- **Data Validation**: Comprehensive input validation using class-validator
+- **CORS Support**: Cross-origin resource sharing enabled
+- **Cloud Ready**: Optimized for Vercel serverless deployment
+- **Database**: Neon PostgreSQL for data storage
+- **TypeScript**: Full type safety and better developer experience
 
 ## Live Demo
 
-- **Backend API**: [Your Vercel URL here]
-- **API Documentation**: [Your Vercel URL]/api/docs
-- **Database Dashboard**: [Your Neon Console URL here]
+- **Backend API**: https://e-commerce-inventory-api.vercel.app/
+- **API Documentation**: https://e-commerce-inventory-api.vercel.app]/api/docs
+- **Database Dashboard**: postgresql://username:password@ep-empty-flower-a14lv8u8-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 
 ## Quick Setup
 
@@ -33,7 +33,7 @@ A comprehensive RESTful API for e-commerce inventory management built with NestJ
 ### 1. Clone and Install
 
 ```bash
-git clone <https://github.com/m-akash/e-commerce-inventory-api>
+git clone https://github.com/m-akash/e-commerce-inventory-api
 cd e-commerce-inventory-api
 npm install
 ```
@@ -44,7 +44,7 @@ npm install
 cp env.example .env
 ```
 
-**For Neon + Supabase (Recommended):**
+**For Neon + Supabase:**
 
 ```env
 # Database Configuration (Neon)
@@ -60,7 +60,7 @@ SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Application Configuration
-PORT=3001
+PORT=3000
 NODE_ENV=development
 ```
 
@@ -79,7 +79,7 @@ JWT_SECRET=your-super-secret-jwt-key-here
 JWT_EXPIRES_IN=24h
 
 # Application Configuration
-PORT=3001
+PORT=3000
 NODE_ENV=development
 ```
 
@@ -106,9 +106,9 @@ npm run start:prod
 
 ### 5. Verify Setup
 
-- **API**: http://localhost:3001
-- **Swagger Docs**: http://localhost:3001/api/docs
-- **Health Check**: http://localhost:3001/health
+- **API**: http://localhost:3000
+- **Swagger Docs**: http://localhost:3000/api/docs
+- **Health Check**: http://localhost:3000/health
 
 ## 📚 API Endpoints
 
@@ -154,7 +154,7 @@ npm run start:prod
 | `SUPABASE_URL`              | Supabase project URL       | Required    |
 | `SUPABASE_ANON_KEY`         | Supabase anonymous key     | Required    |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key  | Required    |
-| `PORT`                      | Application port           | 3001        |
+| `PORT`                      | Application port           | 3000        |
 | `NODE_ENV`                  | Environment                | development |
 
 ## Deployment
