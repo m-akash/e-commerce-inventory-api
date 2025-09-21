@@ -50,13 +50,35 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
+      tryItOutEnabled: true,
+      supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+      docExpansion: 'none',
+      defaultModelsExpandDepth: 1,
+      defaultModelExpandDepth: 1,
     },
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'E-commerce Inventory API',
+    customfavIcon: '/favicon.ico',
+    customJs: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js',
+    ],
+    customCssUrl: [
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css',
+    ],
   });
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
 
-  console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`📚 Swagger documentation: http://localhost:${port}/api/docs`);
+  // For Vercel deployment, we need to handle the case where the app might be called as a serverless function
+  if (process.env.NODE_ENV === 'production') {
+    // In production (Vercel), we don't call listen() as it's handled by the platform
+    await app.init();
+  } else {
+    // In development, we call listen() normally
+    await app.listen(port);
+    console.log(`Application is running on: http://localhost:${port}`);
+    console.log(`Swagger documentation: http://localhost:${port}/api/docs`);
+  }
 }
 void bootstrap();
