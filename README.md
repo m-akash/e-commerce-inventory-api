@@ -1,126 +1,99 @@
 # E-commerce Inventory API
 
-A comprehensive RESTful API for e-commerce inventory management built with NestJS, TypeScript, and PostgreSQL. This API provides secure CRUD operations for products and categories, JWT-based authentication, and advanced filtering capabilities.
+A comprehensive RESTful API for e-commerce inventory management built with NestJS, TypeScript, Neon PostgreSQL, and Supabase Storage.
 
 ## Features
 
-### Authentication
+- ** Authentication & Authorization**: JWT-based authentication with secure user registration and login
+- ** Product Management**: Full CRUD operations for products with image upload support
+- ** Category Management**: Organize products with hierarchical category system
+- ** Image Upload**: Cloud-based image storage using Supabase Storage
+- ** API Documentation**: Interactive Swagger/OpenAPI documentation
+- ** Data Validation**: Comprehensive input validation using class-validator
+- ** CORS Support**: Cross-origin resource sharing enabled
+- ** Cloud Ready**: Optimized for Vercel serverless deployment
+- ** Database**: Neon PostgreSQL for data storage
+- ** TypeScript**: Full type safety and better developer experience
 
-- User registration and login
-- JWT-based authentication
-- Password hashing with bcrypt
-- Protected routes with guards
+## Live Demo
 
-### Product Management
+- **Backend API**: [Your Vercel URL here]
+- **API Documentation**: [Your Vercel URL]/api/docs
+- **Database Dashboard**: [Your Neon Console URL here]
 
-- Create, read, update, delete products
-- Advanced filtering (by category, price range)
-- Pagination support
-- Search functionality
-- Image upload support (base64 or URL)
-- Static file serving for uploaded images
-- User ownership validation
+## Quick Setup
 
-### Category Management
-
-- Full CRUD operations for categories
-- Product count tracking
-- Unique name validation
-- Cascade delete protection
-
-### Additional Features
-
-- Comprehensive Swagger documentation
-- Input validation with class-validator
-- Error handling with proper HTTP status codes
-- CORS enabled
-- Prisma ORM with PostgreSQL
-- Static file serving for uploaded images
-- Health check endpoint
-- Domain-Driven Design (DDD) architecture
-
-## Tech Stack
-
-- **Backend**: Node.js with NestJS & TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Authentication**: JWT with Passport
-- **Documentation**: Swagger/OpenAPI
-- **Validation**: class-validator
-- **File Upload**: Multer
-- **Static Files**: NestJS Static Assets
-- **Architecture**: Domain-Driven Design (DDD)
-
-## Prerequisites
+### Prerequisites
 
 - Node.js (v18 or higher)
-- PostgreSQL (v12 or higher)
-- npm or yarn
+- Neon account (for database)
+- Supabase account (for file storage)
+- Vercel account (for deployment)
 
-## Quick Start
-
-### 1. Clone the Repository
+### 1. Clone and Install
 
 ```bash
-git clone <repository-url>
+git clone <https://github.com/m-akash/e-commerce-inventory-api>
 cd e-commerce-inventory-api
-```
-
-### 2. Install Dependencies
-
-```bash
 npm install
 ```
 
-### 3. Environment Setup
-
-Create a `.env` file in the root directory:
+### 2. Environment Variables
 
 ```bash
 cp env.example .env
 ```
 
-Update the `.env` file with your database credentials:
+**For Neon + Supabase (Recommended):**
 
 ```env
-# Database Configuration
+# Database Configuration (Neon)
+DATABASE_URL="postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require"
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRES_IN=24h
+
+# Supabase for images only
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Application Configuration
+PORT=3001
+NODE_ENV=development
+```
+
+**For Local PostgreSQL:**
+
+```env
+# Database Configuration for local
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_USERNAME=postgres
 DATABASE_PASSWORD=password
 DATABASE_NAME=ecommerce_inventory
-DATABASE_URL="give your neon url if you want to use this"
 
 # JWT Configuration
 JWT_SECRET=your-super-secret-jwt-key-here
 JWT_EXPIRES_IN=24h
 
 # Application Configuration
-PORT=3000
+PORT=3001
 NODE_ENV=development
 ```
 
-### 4. Database Setup
-
-Make sure PostgreSQL is running and create the database:
-
-```sql
-CREATE DATABASE ecommerce_inventory;
-```
-
-Run Prisma migrations to set up the database schema:
+### 3. Database Setup
 
 ```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
 npx prisma migrate dev
 ```
 
-Generate Prisma client:
-
-```bash
-npx prisma generate
-```
-
-### 5. Run the Application
+### 4. Start Application
 
 ```bash
 # Development mode
@@ -131,238 +104,102 @@ npm run build
 npm run start:prod
 ```
 
-The API will be available at `http://localhost:3000`
+### 5. Verify Setup
 
-## API Documentation
+- **API**: http://localhost:3001
+- **Swagger Docs**: http://localhost:3001/api/docs
+- **Health Check**: http://localhost:3001/health
 
-Once the server is running, you can access the interactive Swagger documentation at:
-
-- **Swagger UI**: `http://localhost:3000/api/docs`
-
-## API Endpoints
-
-### Health Check
-
-- `GET /` - Welcome message
-- `GET /health` - Health check endpoint with system status
+## 📚 API Endpoints
 
 ### Authentication
 
-- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/register` - Register user
 - `POST /api/auth/login` - Login user
 
 ### Products
 
-- `GET /api/products` - Get all products (with filters and pagination)
-- `GET /api/products/search?q=keyword` - Search products
+- `GET /api/products` - Get all products
+- `POST /api/products` - Create product
 - `GET /api/products/:id` - Get product by ID
-- `POST /api/products` - Create a new product
 - `PATCH /api/products/:id` - Update product
 - `DELETE /api/products/:id` - Delete product
-- `POST /api/products/:id/upload-image` - Upload product image
-- Static file serving at `/uploads/*` - Access uploaded images
+- `POST /api/products/:id/upload-image` - Upload image (Supabase integration)
 
 ### Categories
 
 - `GET /api/categories` - Get all categories
+- `POST /api/categories` - Create category
 - `GET /api/categories/:id` - Get category by ID
-- `POST /api/categories` - Create a new category
 - `PATCH /api/categories/:id` - Update category
 - `DELETE /api/categories/:id` - Delete category
 
-## 🔍 Query Parameters
+## 🔧 Tech Stack
 
-### Product Filtering
-
-- `categoryId` - Filter by category ID
-- `minPrice` - Minimum price filter
-- `maxPrice` - Maximum price filter
-- `search` - Search in name and description
-- `page` - Page number (default: 1)
-- `limit` - Items per page (default: 10, max: 100)
-
-### Example Requests
-
-```bash
-# Get products with filters
-GET /api/products?categoryId=1&minPrice=10&maxPrice=100&page=1&limit=10
-
-# Search products
-GET /api/products/search?q=iPhone
-
-# Get products by category
-GET /api/products?categoryId=1
-```
-
-## Authentication
-
-All endpoints except authentication require a JWT token. Include the token in the Authorization header:
-
-```bash
-Authorization: Bearer <your-jwt-token>
-```
-
-## 📁 File Uploads and Static Files
-
-The API supports file uploads for product images and serves them as static files:
-
-### Upload Endpoints
-
-- **POST** `/api/products/:id/upload-image` - Upload product image
-- **GET** `/uploads/image-*.png` - Access uploaded images directly
-
-### Supported Image Formats
-
-- PNG, JPG, JPEG, GIF, WebP
-
-### Upload Directory
-
-- Files are stored in the `uploads/` directory
-- Images are automatically renamed with timestamps
-- Static files are served at `/uploads/*` route
-
-### Example File Upload
-
-```bash
-curl -X POST http://localhost:3000/api/products/1/upload-image \
-  -H "Authorization: Bearer <your-jwt-token>" \
-  -F "image=@/path/to/your/image.png"
-```
-
-### Example Authentication Flow
-
-1. **Register a new user:**
-
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "username": "johndoe",
-    "password": "password123"
-  }'
-```
-
-2. **Login:**
-
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
-```
-
-3. **Use the token in subsequent requests:**
-
-```bash
-curl -X GET http://localhost:3000/api/products \
-  -H "Authorization: Bearer <your-jwt-token>"
-```
-
-## Project Structure
-
-```
-src/
-├── prisma/                   # Prisma database configuration
-│   ├── prisma.service.ts
-│   └── prisma.module.ts
-├── modules/                  # Feature modules
-│   ├── auth/                # Authentication module
-│   │   ├── dto/
-│   │   │   ├── login.dto.ts
-│   │   │   └── register.dto.ts
-│   │   ├── strategies/
-│   │   │   └── jwt.strategy.ts
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   └── auth.module.ts
-│   ├── products/            # Products module
-│   │   ├── dto/
-│   │   │   ├── create-product.dto.ts
-│   │   │   ├── update-product.dto.ts
-│   │   │   └── product-query.dto.ts
-│   │   ├── products.controller.ts
-│   │   ├── products.service.ts
-│   │   └── products.module.ts
-│   └── categories/          # Categories module
-│       ├── dto/
-│       │   ├── create-category.dto.ts
-│       │   └── update-category.dto.ts
-│       ├── categories.controller.ts
-│       ├── categories.service.ts
-│       └── categories.module.ts
-├── common/                  # Shared utilities
-│   ├── guards/
-│   │   └── jwt-auth.guard.ts
-│   └── decorators/
-│       └── current-user.decorator.ts
-├── app.controller.ts        # Main app controller with health check
-├── app.service.ts          # Main app service
-├── app.module.ts           # Root module
-└── main.ts                 # Application bootstrap
-
-uploads/                    # Static file uploads directory
-├── image-*.png            # Uploaded product images
-└── ...
-
-prisma/                     # Database schema and migrations
-├── migrations/            # Database migration files
-└── schema.prisma         # Prisma schema definition
-```
-
-## Deployment
-
-### Using Render (Recommended)
-
-1. **Connect your GitHub repository to Render**
-2. **Create a new Web Service**
-3. **Configure environment variables:**
-   - `DATABASE_HOST` - Your PostgreSQL host
-   - `DATABASE_PORT` - Database port (usually 5432)
-   - `DATABASE_USERNAME` - Database username
-   - `DATABASE_PASSWORD` - Database password
-   - `DATABASE_NAME` - Database name
-   - `JWT_SECRET` - Your JWT secret key
-   - `NODE_ENV` - Set to "production"
-
-4. **Build Command:** `npm install && npm run build`
-5. **Start Command:** `npm run start:prod`
-
-### Using Neon for Database
-
-1. **Create a Neon project**
-2. **Get your database credentials from the Neon dashboard**
-
-## Testing
-
-```bash
-# Unit tests
-npm run test
-
-# E2E tests
-npm run test:e2e
-
-# Test coverage
-npm run test:cov
-```
+- **Backend**: NestJS & TypeScript
+- **Database**: Neon PostgreSQL with Prisma ORM
+- **Authentication**: JWT with Passport
+- **Documentation**: Swagger/OpenAPI
+- **File Upload**: Supabase Storage with Multer
+- **Deployment**: Vercel (Serverless Functions)
+- **Cloud Storage**: Supabase Storage
 
 ## Environment Variables
 
-| Variable            | Description         | Default                  |
-| ------------------- | ------------------- | ------------------------ |
-| `DATABASE_HOST`     | PostgreSQL host     | localhost                |
-| `DATABASE_PORT`     | PostgreSQL port     | 5432                     |
-| `DATABASE_USERNAME` | Database username   | postgres                 |
-| `DATABASE_PASSWORD` | Database password   | password                 |
-| `DATABASE_NAME`     | Database name       | ecommerce_inventory      |
-| `DATABASE_URL`      | Full database URL   | Optional (for cloud DBs) |
-| `JWT_SECRET`        | JWT secret key      | your-secret-key          |
-| `JWT_EXPIRES_IN`    | JWT expiration time | 24h                      |
-| `PORT`              | Application port    | 3000                     |
-| `NODE_ENV`          | Environment         | development              |
+| Variable                    | Description                | Default     |
+| --------------------------- | -------------------------- | ----------- |
+| `DATABASE_URL`              | Database connection string | Required    |
+| `JWT_SECRET`                | JWT secret key             | Required    |
+| `JWT_EXPIRES_IN`            | JWT expiration time        | 24h         |
+| `SUPABASE_URL`              | Supabase project URL       | Required    |
+| `SUPABASE_ANON_KEY`         | Supabase anonymous key     | Required    |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key  | Required    |
+| `PORT`                      | Application port           | 3001        |
+| `NODE_ENV`                  | Environment                | development |
 
-**Live Demo**: [Your Render URL here]
-**Database**: [Your Supabase URL here]
-**API Documentation**: [Your Swagger URL here]
+## Deployment
+
+### Using Vercel + Neon + Supabase (Recommended)
+
+1. **Deploy to Vercel:**
+
+   ```bash
+   # Install Vercel CLI
+   npm i -g vercel
+
+   # Deploy
+   vercel
+   ```
+
+2. **Set up Neon Database:**
+   - Create a new project on [Neon](https://neon.tech)
+   - Get your database connection string
+   - Run migrations: `npx prisma migrate deploy`
+
+3. **Set up Supabase Storage:**
+   - Create a new project on [Supabase](https://supabase.com)
+   - Get your API keys (anon key and service role key)
+   - Set up storage bucket for images
+
+4. **Configure Environment Variables in Vercel:**
+   - Go to your Vercel project dashboard
+   - Navigate to Settings > Environment Variables
+   - Add all required environment variables from the table above
+
+5. **Deploy:**
+   ```bash
+   # Build and deploy
+   npm run vercel-build
+   vercel --prod
+   ```
+
+## Available Scripts
+
+- `npm run start:dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start:prod` - Start production server
+- `npm run vercel-build` - Build for Vercel deployment
+- `npm run vercel-dev` - Start Vercel development server
+- `npm run test` - Run unit tests
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run lint` - Run ESLint
