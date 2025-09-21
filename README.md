@@ -7,8 +7,8 @@ A comprehensive RESTful API for e-commerce inventory management built with NestJ
 - **Authentication & Authorization**: JWT-based authentication with secure user registration and login
 - **Product Management**: Full CRUD operations for products with image upload support
 - **Category Management**: Organize products with hierarchical category system
-- **Image Upload**: Cloud-based image storage using Supabase Storage
-- **API Documentation**: Interactive Swagger/OpenAPI documentation
+- **Image Upload**: Cloud-based image storage using Supabase Storage and multer
+- **API Documentation**: Interactive Swagger documentation
 - **Data Validation**: Comprehensive input validation using class-validator
 - **CORS Support**: Cross-origin resource sharing enabled
 - **Cloud Ready**: Optimized for Vercel serverless deployment
@@ -18,7 +18,7 @@ A comprehensive RESTful API for e-commerce inventory management built with NestJ
 ## Live Demo
 
 - **Backend API**: https://e-commerce-inventory-api.vercel.app/
-- **API Documentation**: https://e-commerce-inventory-api.vercel.app]/api/docs
+- **API Documentation**: https://e-commerce-inventory-api.vercel.app/api/docs
 - **Database Dashboard**: postgresql://username:password@ep-empty-flower-a14lv8u8-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 
 ## Quick Setup
